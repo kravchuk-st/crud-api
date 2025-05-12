@@ -1,8 +1,10 @@
 import { IncomingMessage, ServerResponse } from 'http';
+import { v4 as uuidv4 } from 'uuid';
 import { Response } from '../helpers/response';
 import { isValidUUID } from '../helpers/uuid';
+import { jsonParse } from '../helpers/jsonParse';
 import { users } from '../db';
-import { IErrorResponse } from '../types';
+import { IUser, IErrorResponse } from '../types';
 
 export const Requests = (req: IncomingMessage, res: ServerResponse) => {
   try {
@@ -24,6 +26,40 @@ export const Requests = (req: IncomingMessage, res: ServerResponse) => {
       } else {
         Response(res, 200, user);
       }
+    } else if (method === 'POST' && url === process.env.BASE_URL) {
+      let body = '';
+
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
+
+      req.on('end', () => {
+        try {
+          const { username, age, hobbies } = jsonParse<Partial<IUser>>(body) || {};
+
+          if (!username || !age || !hobbies || !Array.isArray(hobbies)) {
+            Response(res, 400, {
+              message: 'Missing required fields',
+            } as IErrorResponse);
+          } else {
+            const newUser: IUser = {
+              id: uuidv4(),
+              username,
+              age,
+              hobbies,
+            };
+
+            users.push(newUser);
+
+            Response(res, 201, newUser);
+          }
+        } catch (error) {
+          console.error(error);
+          Response(res, 500, {
+            message: 'Internal server error',
+          } as IErrorResponse);
+        }
+      });
     }
   } catch (error) {
     console.error(error);
