@@ -8,6 +8,7 @@ Used in-memory database.
     1. npm run start:prod - bundle & started server (production mode)
     2. npm run start:dev - started server in development mode
     3. npm run start:multi - run server in multi poccess - development mode
+    4. npm run test - run tests
 
 # Usage
 

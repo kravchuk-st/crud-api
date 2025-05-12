@@ -6,7 +6,8 @@
   "scripts": {
     "start:dev": "cross-env nodemon --exec ts-node src/index.ts",
     "start:multi": "cross-env LB=true nodemon --exec ts-node src/index.ts",
-    "start:prod": "tsc && cross-env node dist/index.js"
+    "start:prod": "tsc && cross-env node dist/index.js",
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
