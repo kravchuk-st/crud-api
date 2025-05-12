@@ -60,7 +60,7 @@ export const Requests = (req: IncomingMessage, res: ServerResponse) => {
           } as IErrorResponse);
         }
       });
-    } else if (url && method === 'PUT' && url.startsWith(`${process.env.BASE_URL}/`)) {
+    } else if (url && method === 'PUT' && url.startsWith(`${process.env.BASE_URL}`)) {
       const userId = url.split('/')[3];
       if (userId && !isValidUUID(userId)) {
         Response(res, 400, { message: 'Invalid userId' } as IErrorResponse);
@@ -101,6 +101,23 @@ export const Requests = (req: IncomingMessage, res: ServerResponse) => {
           } as IErrorResponse);
         }
       });
+    } else if (url && method === 'DELETE' && url.startsWith(`${process.env.BASE_URL}`)) {
+      const userId = url.split('/')[3];
+
+      if (userId && !isValidUUID(userId)) {
+        Response(res, 400, { message: 'Invalid userId' } as IErrorResponse);
+      }
+
+      const userIndex = users.findIndex((el) => el.id === userId);
+
+      if (userIndex === -1) {
+        Response(res, 404, { message: 'User not found' } as IErrorResponse);
+      } else {
+        users.splice(userIndex, 1);
+        Response(res, 204);
+      }
+    } else {
+      Response(res, 404, { message: 'Invalid route' } as IErrorResponse);
     }
   } catch (error) {
     console.error(error);
