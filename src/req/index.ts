@@ -60,6 +60,47 @@ export const Requests = (req: IncomingMessage, res: ServerResponse) => {
           } as IErrorResponse);
         }
       });
+    } else if (url && method === 'PUT' && url.startsWith(`${process.env.BASE_URL}/`)) {
+      const userId = url.split('/')[3];
+      if (userId && !isValidUUID(userId)) {
+        Response(res, 400, { message: 'Invalid userId' } as IErrorResponse);
+      }
+
+      let body = '';
+
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
+
+      req.on('end', () => {
+        try {
+          const { username, age, hobbies } = jsonParse<Partial<IUser>>(body) || {};
+
+          const userIndex = users.findIndex((el) => el.id === userId);
+          const user = users[userIndex];
+
+          if (!user) {
+            Response(res, 404, {
+              message: 'User not found',
+            } as IErrorResponse);
+          } else if (!username || !age || !hobbies || !Array.isArray(hobbies)) {
+            Response(res, 400, {
+              message: 'Missing required fields',
+            } as IErrorResponse);
+          } else {
+            user.username = username;
+            user.age = age;
+            user.hobbies = hobbies;
+
+            Response(res, 200, user);
+          }
+        } catch (error) {
+          console.error(error);
+          Response(res, 500, {
+            message: 'Internal server error',
+          } as IErrorResponse);
+        }
+      });
     }
   } catch (error) {
     console.error(error);
